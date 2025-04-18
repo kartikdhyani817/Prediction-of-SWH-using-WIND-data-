@@ -1,0 +1,48 @@
+ from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+import statsmodels.api as sm
+from sklearn.metrics import r2_score 
+import numpy as np
+import matplotlib.pyplot as plt 
+import pandas as pd
+import math
+
+file = pd.read_excel(r'C:\Users\HP\AppData\Local\Temp\5ec31193-ba89-4bb5-9c09-30a00f4381b6_WAVE_GLO_PHY_SWH_L3_NRT_014_001.7z.1b6\cmems_obs-wave_glo_phy-swh_nrt_al-l3_PT1S_202211\cmems_obs-wave_glo_phy-swh_nrt_al-l3_PT1S_2023.xlsx')
+wind = file['wind'].values.reshape(-1, 1) 
+swh = file['swh']
+model = LinearRegression()
+# Fit the model
+model.fit(wind, swh)
+
+# Make predictions
+swh_pred = model.predict(wind)
+
+#r_squared = math.sqrt(r2_score(swh, swh_pred))
+r_squared = "{:.2f}".format(math.sqrt(r2_score(swh, swh_pred))) 
+#print('R-squared:', r_squared)
+plt.title( r_squared)
+plt.plot([0, 20], [0, 10], color='k')
+plt.scatter(wind,swh)
+plt.xlabel("wind") 
+plt.ylabel("swh") 
+plt.show() 
+y = file[['swh']]
+X = file[['wind']].values.reshape(-1, 1) 
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+model = LinearRegression()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+mse = mean_squared_error(y_test, y_pred)
+print(f"Mean Squared Error: {mse}")
+y_train_pred = model.predict(X_train)
+
+r2_train ="{:.2f}".format(math.sqrt(r2_score(y_train, y_train_pred))) 
+#print('Training R-squared:', r2_train)
+plt.plot([0, 20], [0, 10], color='k')
+plt.scatter(X_train, y_train) 
+plt.title( r2_train)
+plt.xlabel("trained wind")
+plt.ylabel("trained swh")
