@@ -1,0 +1,56 @@
+import numpy as np
+import pandas as pd
+import netCDF4 as nc
+import matplotlib.pyplot as plt
+from scipy.interpolate import RegularGridInterpolator
+
+# Load netCDF dataset
+dataset = nc.Dataset(r'C:\Users\HP\Downloads\ForPlots\cmems_obs-wind_glo_phy_nrt_l4_0.125deg_PT1H_2023061406_R20230614T00_06.nc')
+
+# Extract data from netCDF variables
+lon = dataset.variables['lon'][:]
+lat = dataset.variables['lat'][:]
+u = dataset.variables['eastward_wind'][:]
+v = dataset.variables['northward_wind'][:]
+w = np.sqrt(u**2 + v**2)  # Calculate wind speed magnitude
+
+# Read Excel data
+T = pd.read_excel(r'C:\Users\HP\Downloads\ForPlots\Biporjoy.xlsx')
+# Resize T['lat'] to shape (400,)
+
+# Define grid for interpolation
+Xi, Yi = np.meshgrid(np.arange(50, 100, 0.125), np.arange(0, 25, 0.125))
+
+# Interpolate onto the regular grid
+f = RegularGridInterpolator((lon, lat), w[0,:,:].transpose())
+Z = f((Xi, Yi))
+
+# Plotting
+plt.figure(figsize=(12, 6))
+
+fi = RegularGridInterpolator((lon, lat), w[0,:,:].transpose())
+Zi = fi((T['lon'], T['lat']))
+
+#fi = RegularGridInterpolator((T['lon'], T['lat']),w[0,:,:].transpose());
+#zi = fi((Xi,Yi))
+
+
+# Plot interpolated data
+plt.subplot(121)
+plt.pcolor(Xi, Yi, Z, shading='interp', cmap='jet')
+plt.colorbar()
+plt.gca().set_aspect('equal', adjustable='box')
+plt.plot(T['lon'], T['lat'], 'k', linewidth=2)
+plt.title('Interpolated Wind Speed')
+
+# Plotting Zi against T_lat_resized
+plt.subplot(122)
+plt.plot(T['lat'], T['wind'], 'r', label='Altimetry Wind')
+plt.plot(T['lat'], Zi, 'b', label='Interpolated Wind')  # Assuming Zi is interpolated along Xi (first dimension)
+plt.legend()
+plt.title('Comparison of Wind Speed')
+plt.xlabel("lat")
+plt.ylabel("wind")
+
+plt.tight_layout()
+plt.show()
