@@ -1,0 +1,51 @@
+	import numpy as np
+	import pandas as pd
+3.	import netCDF4 as nc
+4.	import matplotlib.pyplot as plt
+5.	from scipy.interpolate import RegularGridInterpolator
+6.	
+7.	# Load netCDF dataset
+8.	dataset = nc.Dataset(r"C:\Users\HP\Downloads\ForPlots\WAVERYS_20230614_R20230614.nc")
+9.	
+10.	# Extract data from netCDF variables
+11.	lon = dataset.variables['longitude'][:]
+12.	lat = dataset.variables['latitude'][:]
+13.	
+14.	swh = dataset.variables['VHM0'][:]
+15.	
+16.	# Read Excel data
+17.	T = pd.read_excel(r'C:\Users\HP\Downloads\ForPlots\Biporjoy.xlsx')
+18.	# Resize T['lat'] to shape (400,)
+19.	
+20.	# Define grid for interpolation
+21.	Xi, Yi = np.meshgrid(np.arange(50, 100, 0.125), np.arange(0, 25, 0.125))
+22.	
+23.	# Interpolate onto the regular grid
+24.	f = RegularGridInterpolator((lon, lat), swh[0,:,:].transpose())
+25.	Z = f((Xi, Yi))
+26.	
+27.	# Plotting
+28.	plt.figure(figsize=(12, 6))
+29.	
+30.	fi = RegularGridInterpolator((lon, lat), swh[0,:,:].transpose())
+31.	Zi = fi((T['lon'], T['lat']))
+32.	
+33.	# Plot interpolated data
+34.	plt.subplot(121)
+35.	plt.pcolor(Xi, Yi, Z, shading='interp', cmap='jet')
+36.	plt.clim(0, 9)
+37.	plt.colorbar()
+38.	plt.gca().set_aspect('equal', adjustable='box')
+39.	plt.plot(T['lon'], T['lat'], 'k', linewidth=2)
+40.	plt.title('Interpolated swh')
+41.	
+42.	# Plotting Zi against T_lat_resized
+43.	plt.subplot(122)
+44.	plt.plot(T['lat'], T['swh'], 'r', label='Altimetry swh')
+45.	plt.plot(T['lat'], Zi, 'b', label='Interpolated swh')  # Assuming Zi is interpolated along Xi (first dimension)
+46.	plt.legend()
+47.	plt.title('Comparison of swh')
+48.	plt.xlabel("lat")
+49.	plt.ylabel("swh")
+50.	plt.tight_layout()
+51.	plt.show()
