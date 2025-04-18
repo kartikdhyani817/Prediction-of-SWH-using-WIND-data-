@@ -1,0 +1,23 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+import numpy as np
+data = pd.read_excel(r'C:\Users\HP\Downloads\BOB 3, 30july 12 pm.xlsx')
+fig = plt.figure(figsize=(10, 8))
+
+# Create a GeoAxes in the PlateCarree projection
+ax = plt.axes(projection=ccrs.PlateCarree())
+
+# Set the extent to indaia
+ax.set_extent([50, 100, 0, 25])  
+# Add coastlines and borders
+ax.coastlines()
+ax.add_feature(cfeature.BORDERS)
+ax.add_feature(cfeature.OCEAN, edgecolor='lightblue')
+sc = ax.scatter(data['lon'], data['lat'], c=data['swh'], cmap='autumn', s=50)
+ax.set_title('swh on 2023-07-30,12pm : ')
+cbar = plt.colorbar(sc, ax=ax, orientation='vertical', pad=0.05 , shrink=0.8)
+cbar.set_label('swh meters')
+ax.grid()
+plt.show()
